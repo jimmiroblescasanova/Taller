@@ -17,19 +17,47 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static ?string $modelLabel = 'usuario';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $navigationGroup = 'Seguridad';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Section::make()
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                        ->label('Nombre completo'),
+                    Forms\Components\TextInput::make('email')
+                        ->label('Correo electrónico'),
+                    Forms\Components\TextInput::make('password')
+                        ->label('Contraseña')
+                        ->password()
+                        ->revealable()
+                        ->dehydrated(false),
+                    Forms\Components\Select::make('roles')
+                        ->label('Perfil')
+                        ->multiple()
+                        ->relationship(
+                            titleAttribute: 'name', 
+                            modifyQueryUsing: fn (Builder $query) => $query->where('name', '!=', 'Super Admin') 
+                        )
+                        ->searchable()
+                        ->preload()
+                        ->maxItems(1),
+                ])
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->withoutRole('Super Admin');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('email'),
