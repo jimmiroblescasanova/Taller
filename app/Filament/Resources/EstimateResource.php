@@ -4,13 +4,19 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Order;
 use App\Models\Contact;
 use App\Models\Product;
 use App\Models\Estimate;
 use Filament\Forms\Form;
+use App\Enums\OrderStatus;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
+use Illuminate\Support\Number;
 use Filament\Resources\Resource;
+use App\Enums\EstimateEstatusEnum;
+use Illuminate\Support\Facades\DB;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Wizard\Step;
 use App\Filament\Resources\EstimateResource\Pages;
@@ -54,21 +60,38 @@ class EstimateResource extends Resource
                 Tables\Columns\TextColumn::make('contact.full_name')
                     ->label('Contacto')
                     ->description(fn (Estimate $record): string => $record->title),
+                Tables\Columns\TextColumn::make('agent.name'),
                 Tables\Columns\TextColumn::make('total')
-                    ->numeric(2, '.', ',')
                     ->prefix('$')
-                    ->alignEnd(),
+                    ->numeric(2)
+                    ->alignEnd()
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total')
+                            ->formatStateUsing(fn (string $state) => Number::currency($state / 100))
+                    ),
+                Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha')
-                    ->dateTime()
+                    ->date()
                     ->alignEnd(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('transform')
+                        ->label('Transformar')
+                        ->icon('heroicon-o-arrow-path-rounded-square')
+                        ->requiresConfirmation()
+                        ->action(fn (Estimate $record) => self::transformEstimate($record))
+                        ->hidden(fn (Estimate $record) => $record->status === EstimateEstatusEnum::ORDERED),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ])
+                ->link()
+                ->label('Opciones'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -157,12 +180,6 @@ class EstimateResource extends Resource
             Forms\Components\Repeater::make('items')
             ->relationship()
             ->schema([
-                Forms\Components\TextInput::make('quantity')
-                    ->label('Cant.')
-                    ->numeric()
-                    ->default(1)
-                    ->step(1)
-                    ->columnSpan(1),
                 Forms\Components\Select::make('product_id')
                     ->label('Producto')
                     ->relationship(name: 'product', titleAttribute: 'name')
@@ -170,19 +187,26 @@ class EstimateResource extends Resource
                     ->optionsLimit(25)
                     ->live()
                     ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set){
-                        self::searchPrice($get, $set);
+                        return self::searchPrice($get, $set);
                     })
-                    ->columnSpan(3),
+                    ->columnSpan(3)
+                    ->required(),
+                Forms\Components\TextInput::make('quantity')
+                    ->label('Cant.')
+                    ->numeric()
+                    ->step(1)
+                    ->columnSpan(1)
+                    ->required(),
                 Forms\Components\TextInput::make('price')
                     ->label('Precio')
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(',')
                     ->numeric()
+                    ->inputMode('decimal')
                     ->step('0.01')
                     ->prefix('$')
-                    ->columnSpan(1),
+                    ->columnSpan(1)
+                    ->required(),
             ])
-            ->live(debounce: 1000)
+            ->live(onBlur: true)
             ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                 return self::updateTotals($get, $set);
             })
@@ -213,5 +237,50 @@ class EstimateResource extends Resource
                     ->readOnly()
                     ->prefix('$'),
             ]);
+    }
+
+    public static function transformEstimate(Estimate $record)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $order = Order::create([
+                'title' => $record->title,
+                'contact_id' => $record->contact_id,
+                'agent_id' => $record->agent_id,
+                'subtotal' => $record->subtotal,
+                'tax' => $record->tax,
+                'total' => $record->total,
+                'estimate_id' => $record->id,
+                'status' => OrderStatus::INCOMPLETE
+            ]);
+    
+            foreach ($record->items as $item) {
+                $order->items()->create([
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                ]);
+            }
+
+            $record->update([
+                'status' => 1,
+                'order_id' => $order->id,
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+            DB::rollBack();
+
+            Notification::make()
+                ->title('Ocurrio un error')
+                ->danger()
+                ->send();
+
+            return false;
+        }
+
+        return redirect()->route('filament.admin.resources.orders.edit', $order);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\MoneyCast;
+use App\Enums\EstimateEstatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ class Estimate extends Model
         'subtotal'  => MoneyCast::class,
         'tax'       => MoneyCast::class,
         'total'     => MoneyCast::class,
+        'status'    => EstimateEstatusEnum::class,
     ];
 
     public function items(): HasMany

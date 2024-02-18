@@ -20,6 +20,9 @@ use App\Filament\Resources\OrderResource\RelationManagers;
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
+    
+    protected static ?string $modelLabel = 'orden';
+    protected static ?string $pluralModelLabel = 'ordenes';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -139,7 +142,11 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
+            ->deferLoading()
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID'),
                 Tables\Columns\TextColumn::make('contact.full_name')
                     ->description(fn (Order $record): string => $record->title),
                 Tables\Columns\TextColumn::make('status')->badge(),

@@ -5,10 +5,10 @@ namespace App\Enums;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum Status: string implements HasLabel, HasColor
+enum Status: int implements HasLabel, HasColor
 {
-    case ACTIVE    = '1';
-    case INACTIVE  = '0';
+    case ACTIVE    = 1;
+    case INACTIVE  = 0;
 
     public function getLabel(): ?string
     {
