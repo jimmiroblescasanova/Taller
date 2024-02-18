@@ -9,9 +9,9 @@ use App\Models\Contact;
 use App\Models\Product;
 use App\Models\Estimate;
 use Filament\Forms\Form;
-use App\Enums\OrderStatus;
 use Filament\Tables\Table;
 use Filament\Support\RawJs;
+use App\Enums\OrderStatusEnum;
 use Illuminate\Support\Number;
 use Filament\Resources\Resource;
 use App\Enums\EstimateEstatusEnum;
@@ -252,7 +252,7 @@ class EstimateResource extends Resource
                 'tax' => $record->tax,
                 'total' => $record->total,
                 'estimate_id' => $record->id,
-                'status' => OrderStatus::INCOMPLETE
+                'status' => OrderStatusEnum::INCOMPLETE
             ]);
     
             foreach ($record->items as $item) {

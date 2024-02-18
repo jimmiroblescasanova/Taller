@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\OrderStatus;
+use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +15,7 @@ class Order extends Model
     use SoftDeletes;
 
     protected $casts = [
-        'status' => OrderStatus::class,
+        'status' => OrderStatusEnum::class,
     ];
 
     public function agent(): BelongsTo

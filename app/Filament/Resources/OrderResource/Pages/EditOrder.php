@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\OrderResource\Pages;
 
 use Filament\Actions;
-use App\Enums\OrderStatus;
+use App\Enums\OrderStatusEnum;
 use App\Traits\ShouldRedirectToIndex;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
@@ -28,8 +28,8 @@ class EditOrder extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        if ($record['status'] == OrderStatus::INCOMPLETE) {
-            $data['status'] = OrderStatus::PENDING;
+        if ($record['status'] == OrderStatusEnum::INCOMPLETE) {
+            $data['status'] = OrderStatusEnum::PENDING;
         }
 
         $record->update($data);
