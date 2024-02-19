@@ -10,6 +10,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\OrderStatusEnum;
 use Filament\Resources\Resource;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -156,6 +157,16 @@ class OrderResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('inventory')
+                ->action(function (Order $record) {
+                    $inventory = $record->inventory()->create([
+                        'vehicle_id' => $record->vehicle_id,
+                    ]);
+
+                    return redirect()->route('filament.admin.resources.vehicle-inventories.edit', $inventory);
+                })
+                ->hidden(fn(Order $record): bool => $record->inventory()->exists() 
+                || $record->status == OrderStatusEnum::INCOMPLETE),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])

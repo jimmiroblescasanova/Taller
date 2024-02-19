@@ -8,15 +8,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Order extends Model
+class Order extends Model 
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $casts = [
         'status' => OrderStatusEnum::class,
     ];
+
+    public function inventory(): HasOne
+    {
+        return $this->hasOne(VehicleInventory::class);
+    }
 
     public function agent(): BelongsTo
     {

@@ -2,11 +2,11 @@
 
 namespace App\Filament\Pages;
 
-use App\Enums\OrderStatus;
 use Filament\Tables;
 use App\Models\Order;
 use Filament\Pages\Page;
 use Filament\Tables\Table;
+use App\Enums\OrderStatusEnum;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Concerns\InteractsWithTable;
 
@@ -34,20 +34,20 @@ class WorkOrders extends Page implements HasTable
                     ->requiresConfirmation()
                     ->action(function(Order $record) {
                         $record->update([
-                            'status' => OrderStatus::PROCESING,
+                            'status' => OrderStatusEnum::PROCESING,
                             'started_at' => NOW(),
                         ]);
                     })
-                    ->visible(fn (Order $record) => $record->status === OrderStatus::PENDING),
+                    ->visible(fn (Order $record) => $record->status === OrderStatusEnum::PENDING),
                 Tables\Actions\Action::make('complete')
                     ->requiresConfirmation()
                     ->action( function(Order $record) {
                         $record->update([
-                            'status' => OrderStatus::COMPLETED,
+                            'status' => OrderStatusEnum::COMPLETED,
                             'ended_at' => NOW(),
                         ]);
                     })
-                    ->visible(fn (Order $record) => $record->status === OrderStatus::PROCESING),
+                    ->visible(fn (Order $record) => $record->status === OrderStatusEnum::PROCESING),
             ]);
     }
 }
