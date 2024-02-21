@@ -8,9 +8,11 @@ use App\Models\Order;
 use App\Models\Vehicle;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\OrderStatusEnum;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -138,6 +140,91 @@ class OrderResource extends Resource
                         ->dehydrated(false),
                 ])->columns(3),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Group::make()
+                ->schema([
+                    Infolists\Components\Section::make('Encabezado')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('title')
+                            ->label('Titulo de la orden')
+                            ->columnSpan(2),
+                        Infolists\Components\TextEntry::make('contact.name'),
+                        Infolists\Components\TextEntry::make('contact.email'),
+    
+                    ])
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->columns(2),
+
+                    Infolists\Components\Section::make('Productos')
+                    ->schema([
+                        Infolists\Components\RepeatableEntry::make('items')
+                        ->label('Detalle de los productos')
+                        ->schema([
+                            Infolists\Components\TextEntry::make('product.name')
+                            ->columnSpan(4),
+                            Infolists\Components\TextEntry::make('quantity'),
+                            Infolists\Components\TextEntry::make('price')
+                                ->money('MXN'),
+                        ])
+                        ->columns(6)
+                        ->contained(false),
+
+                        Infolists\Components\Fieldset::make('Totales')
+                        ->schema([
+                            Infolists\Components\TextEntry::make('subtotal')
+                                ->label('Subtotal')
+                                ->money('MXN'),
+                            Infolists\Components\TextEntry::make('tax')
+                                ->label('Impuestos')
+                                ->money('MXN'),
+                            Infolists\Components\TextEntry::make('total')
+                                ->label('Total')
+                                ->money('MXN'),
+                        ])
+                        ->columns(3),
+                    ])
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->compact(),
+    
+                    
+                ])->columnSpan(2),
+                
+
+                Infolists\Components\Group::make()
+                ->schema([
+                    Infolists\Components\Section::make('Información del servicio')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('status')
+                            ->badge(),
+                        Infolists\Components\TextEntry::make('station.name'),
+                        Infolists\Components\TextEntry::make('agent.name'),
+                    ])
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->columns(2),
+    
+                    Infolists\Components\Section::make('Datos del vehiculo')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('vehicle.vehicle_type.name'),
+                        Infolists\Components\TextEntry::make('vehicle.vehicle_brand.name'),
+                        Infolists\Components\TextEntry::make('vehicle.model'),
+                        Infolists\Components\TextEntry::make('vehicle.color'),
+                        Infolists\Components\TextEntry::make('vehicle.license_plate'),
+                    ])
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->columns(2),
+                ])
+                ->columnSpan(1),
+
+            ])->columns(3);
     }
 
     public static function table(Table $table): Table
