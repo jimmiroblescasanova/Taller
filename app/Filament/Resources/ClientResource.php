@@ -11,7 +11,6 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Infolists\Components\TextEntry;
 use App\Filament\Resources\ClientResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ClientResource\RelationManagers;
@@ -36,14 +35,47 @@ class ClientResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Datos personales')
+                infolists\Components\Group::make()
                 ->schema([
-                    TextEntry::make('code')->label('Código CONTPAQi'),
-                    TextEntry::make('name')->label('Razón Social'),
-                    TextEntry::make('rfc')->label('R.F.C.'),
+                    Infolists\Components\Section::make('Datos personales')
+                    ->icon('heroicon-o-user')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('name')
+                            ->label('Razón Social')
+                            ->columnSpanFull(),
+                        Infolists\Components\TextEntry::make('code')->label('Código CONTPAQi'),
+                        Infolists\Components\TextEntry::make('rfc')->label('R.F.C.'),
+                        Infolists\Components\TextEntry::make('tradebane')->label('Nombre comercial'),
+                    ])
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->columns(3),
+
+                    Infolists\Components\Section::make('Datos de envío')
+                    ->icon('heroicon-o-at-symbol')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('email1')->label('Correo electrónico 1'),
+                        Infolists\Components\TextEntry::make('email2')->label('Correo electrónico 2'),
+                        Infolists\Components\TextEntry::make('email3')->label('Correo electrónico 3'),
+                    ])
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->columns(2),
                 ])
-                ->columns(2),
-            ]);
+                ->columnSpan(2),
+
+                Infolists\Components\Section::make('Modificaciones')
+                ->icon('heroicon-o-calendar')
+                ->schema([
+                    Infolists\Components\TextEntry::make('updated_at')
+                        ->label('Ult. actualización')
+                        ->since(),
+                ])
+                ->collapsible()
+                ->persistCollapsed()
+                ->columnSpan(1),
+            ])
+            ->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -51,11 +83,21 @@ class ClientResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code')
-                ->label('Código'),
+                    ->label('Código')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
-                ->label('Razón Social'),
+                    ->label('Razón Social')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('rfc')
-                ->label('R.F.C.'),
+                    ->label('R.F.C.')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('tradename')
+                    ->label('Nombre Comercial')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
@@ -65,18 +107,13 @@ class ClientResource extends Resource
             ])
             ->recordUrl(
                 fn (Model $record): string => Pages\ViewClient::getUrl([$record->id]),
-            )
-            ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
-            ]);
+            );
     }
     
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ContactsRelationManager::class,
         ];
     }
     
@@ -84,9 +121,7 @@ class ClientResource extends Resource
     {
         return [
             'index' => Pages\ListClients::route('/'),
-            // 'create' => Pages\CreateClient::route('/create'),
             'view' => Pages\ViewClient::route('/{record}'),
-            // 'edit' => Pages\EditClient::route('/{record}/edit'),
         ];
     }    
 }
