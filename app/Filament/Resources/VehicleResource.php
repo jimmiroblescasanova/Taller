@@ -38,18 +38,24 @@ class VehicleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query){
+                $query->orderBy('license_plate', 'ASC');
+            })
             ->columns([
-                Tables\Columns\TextColumn::make('model')
-                    ->label('Modelo')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('vehicle_type.name')->label('Tipo'),
-                Tables\Columns\TextColumn::make('vehicle_brand.name')->label('Marca'),
                 Tables\Columns\TextColumn::make('license_plate')
                     ->label('Placas')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('model')
+                    ->label('Modelo')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('vehicle_brand.name')->label('Marca'),
+                Tables\Columns\TextColumn::make('vehicle_type.name')->label('Tipo'),
                 Tables\Columns\TextColumn::make('contact.full_name')
                     ->label('Contacto')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('vehicle_type')
@@ -65,6 +71,7 @@ class VehicleResource extends Resource
                     ->searchable()
                     ->preload(),
             ])
+            ->deferFilters()
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
