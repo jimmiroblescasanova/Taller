@@ -3,20 +3,21 @@
 namespace App\Filament\Resources\ContactResource\Pages;
 
 use Filament\Actions;
-use App\Traits\ShouldRedirectToIndex;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\ContactResource;
 
-class EditContact extends EditRecord
+class ViewContact extends ViewRecord
 {
-    use ShouldRedirectToIndex;
-    
     protected static string $resource = ContactResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\EditAction::make(),
+            Actions\Action::make('back')
+                ->label('Ir atrás')
+                ->color('gray')
+                ->url(url()->previous()),
         ];
     }
 }

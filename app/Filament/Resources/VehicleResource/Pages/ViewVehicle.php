@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\VehicleResource\Pages;
 
-use App\Filament\Resources\VehicleResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\VehicleResource;
 
 class ViewVehicle extends ViewRecord
 {
@@ -14,6 +14,10 @@ class ViewVehicle extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+            Actions\Action::make('back')
+                ->label('Ir atrás')
+                ->color('gray')
+                ->url(url()->previous()),
         ];
     }
 }

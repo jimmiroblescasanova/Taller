@@ -8,10 +8,12 @@ use App\Models\Contact;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\ContactMedia;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ContactResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\ContactResource\ContactInfolist;
 use App\Filament\Resources\ContactResource\RelationManagers;
 
 class ContactResource extends Resource
@@ -28,8 +30,8 @@ class ContactResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()
-                ->description('Información general')
+                Forms\Components\Section::make('Información general')
+                ->icon('heroicon-o-identification')
                 ->schema([
                     Forms\Components\TextInput::make('name')
                         ->label('Nombre (s)')
@@ -45,8 +47,9 @@ class ContactResource extends Resource
                         ->email(),
                 ])
                 ->columns(2),
-                Forms\Components\Section::make()
-                ->description('Informacion adicional')
+
+                Forms\Components\Section::make('Informacion adicional')
+                ->icon('heroicon-o-chat-bubble-bottom-center-text')
                 ->schema([
                     Forms\Components\Select::make('channel')
                         ->label('Como nos conocio')
@@ -69,17 +72,31 @@ class ContactResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return ContactInfolist::infolist($infolist);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->deferLoading()
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->orderBy('full_name', 'ASC');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')
-                    ->label('Nombre completo'),
+                    ->label('Nombre completo')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Teléfono'),
+                    ->label('Teléfono')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Correo electrónico'),
+                    ->label('Correo electrónico')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de alta')
                     ->date(),
@@ -88,18 +105,16 @@ class ContactResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                //
             ]);
     }
     
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ClientsRelationManager::class,
             RelationManagers\VehiclesRelationManager::class,
+            RelationManagers\ClientsRelationManager::class,
         ];
     }
     
@@ -108,6 +123,7 @@ class ContactResource extends Resource
         return [
             'index' => Pages\ListContacts::route('/'),
             'create' => Pages\CreateContact::route('/create'),
+            'view' => Pages\ViewContact::route('/{record}'),
             'edit' => Pages\EditContact::route('/{record}/edit'),
         ];
     }    

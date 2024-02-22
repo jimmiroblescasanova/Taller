@@ -7,10 +7,12 @@ use Filament\Tables;
 use App\Models\Vehicle;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\VehicleResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\VehicleResource\VehicleInfolist;
 use App\Filament\Resources\VehicleResource\RelationManagers;
 use App\Filament\Resources\ContactResource\RelationManagers\VehiclesRelationManager;
 
@@ -77,6 +79,11 @@ class VehicleResource extends Resource
                         ->rows(5),
                 ]),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return VehicleInfolist::infolist($infolist);
     }
 
     public static function table(Table $table): Table
