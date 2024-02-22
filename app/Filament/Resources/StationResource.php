@@ -39,6 +39,7 @@ class StationResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->orderBy('name', 'ASC'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Estación de trabajo')
@@ -61,11 +62,6 @@ class StationResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
             ]);
     }
     
