@@ -30,7 +30,8 @@ class AgentResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('Nombre completo')
-                    ->required(),
+                    ->required()
+                    ->columnSpan(2),
                 Forms\Components\TextInput::make('comision')
                     ->label('Comision de venta')
                     ->suffix('%')
@@ -39,8 +40,10 @@ class AgentResource extends Resource
                     ->required(),
                 Forms\Components\Toggle::make('active')
                     ->label('Activo')
+                    ->inline(false)
                     ->visibleOn('edit'),
-            ]);
+            ])
+            ->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -74,11 +77,6 @@ class AgentResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
             ]);
     }
     
