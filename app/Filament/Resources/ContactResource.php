@@ -41,7 +41,8 @@ class ContactResource extends Resource
                         ->required(),
                     Forms\Components\TextInput::make('phone')
                         ->label('Teléfono')
-                        ->tel(),
+                        ->mask('999-999-9999')
+                        ->placeholder('999-999-9999'),
                     Forms\Components\TextInput::make('email')
                         ->label('Correo electrónico')
                         ->email(),

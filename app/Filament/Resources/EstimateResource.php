@@ -2,25 +2,21 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
-use App\Models\Contact;
-use App\Models\Product;
 use App\Models\Estimate;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Filament\Support\RawJs;
 use App\Enums\OrderStatusEnum;
 use Illuminate\Support\Number;
 use Filament\Resources\Resource;
-use App\Enums\EstimateEstatusEnum;
+use App\Enums\EstimateStatusEnum;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Wizard\Step;
 use App\Filament\Resources\EstimateResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\EstimateResourse\EstimateForm;
 use App\Filament\Resources\EstimateResource\RelationManagers;
 
 class EstimateResource extends Resource
@@ -35,18 +31,7 @@ class EstimateResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Wizard::make([
-                    self::stepHeading(),
-
-                    self::stepItems(),
-                ])
-                ->columnSpanFull(),
-
-                self::subtotals()
-                ->columns(3),
-            ]);
+        return EstimateForm::form($form);
     }
 
     public static function table(Table $table): Table
@@ -58,9 +43,12 @@ class EstimateResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('#'),
                 Tables\Columns\TextColumn::make('contact.full_name')
-                    ->label('Contacto')
-                    ->description(fn (Estimate $record): string => $record->title),
-                Tables\Columns\TextColumn::make('agent.name'),
+                    ->label('Contacto / Título')
+                    ->description(fn (Estimate $record): string => $record->title)
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('agent.name')
+                    ->label('Agente'),
                 Tables\Columns\TextColumn::make('total')
                     ->prefix('$')
                     ->numeric(2)
@@ -69,14 +57,25 @@ class EstimateResource extends Resource
                         Tables\Columns\Summarizers\Sum::make()
                             ->label('Total')
                             ->formatStateUsing(fn (string $state) => Number::currency($state / 100))
-                    ),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                    )
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha')
                     ->date()
                     ->alignEnd(),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge()
+                    ->alignCenter(),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('agent')
+                    ->label('Agente')
+                    ->multiple()
+                    ->relationship('agent', 'name')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
@@ -86,19 +85,14 @@ class EstimateResource extends Resource
                         ->icon('heroicon-o-arrow-path-rounded-square')
                         ->requiresConfirmation()
                         ->action(fn (Estimate $record) => self::transformEstimate($record))
-                        ->hidden(fn (Estimate $record) => $record->status === EstimateEstatusEnum::ORDERED),
+                        ->hidden(fn (Estimate $record) => $record->status === EstimateStatusEnum::ORDERED),
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->hidden(fn (Estimate $record) => $record->order()->exists()),
                 ])
                 ->link()
-                ->label('Opciones'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                ->label('Opciones')
+                ->hidden(fn (Estimate $record) => $record->trashed()),
             ]);
     }
 
@@ -127,118 +121,6 @@ class EstimateResource extends Resource
             ]);
     }
 
-    public static function searchPrice(Forms\Get $get, Forms\Set $set): void
-    {
-        $priceList = Contact::where('id', $get('../../contact_id'))->value('price_list');
-        
-        $price = Product::where('id', $get('product_id'))->value($priceList ?? 'price_1');
-
-        $set('price', $price);
-    }
-
-    public static function updateTotals($get, $set): void
-    {
-        $selectedProducts = collect($get('items'))->filter(function ($item){
-            return !empty($item['product_id']) && !empty($item['quantity']) && !empty($item['price']);
-        });
-
-        $subtotal = $selectedProducts->reduce(function ($sum, $product) {
-            return $sum + ($product['quantity'] * $product['price']);
-        }, 0);
-
-        $set('subtotal', number_format($subtotal, 2));
-        $set('tax', number_format(($subtotal * 1.16) - $subtotal, 2));
-        $set('total', number_format(($subtotal * 1.16), 2));
-    }
-
-    public static function stepHeading(): Step
-    {
-        return Step::make('Cotización')
-        ->schema([
-            Forms\Components\Select::make('contact_id')
-                ->label('Seleccionar contacto')
-                ->relationship(name: 'contact', titleAttribute: 'full_name')
-                ->searchable()
-                ->required(),
-            Forms\Components\Select::make('agent_id')
-                ->label('Agente de venta')
-                ->relationship(name: 'agent', titleAttribute: 'name')
-                ->searchable()
-                ->preload()
-                ->required(),
-            Forms\Components\TextInput::make('title')
-                ->label('Título de la cotización')
-                ->required()
-                ->columnSpanFull(),
-        ]);
-    }
-
-    public static function stepItems(): Step
-    {
-        return Step::make('Productos')
-        ->schema([
-            Forms\Components\Repeater::make('items')
-            ->relationship()
-            ->schema([
-                Forms\Components\Select::make('product_id')
-                    ->label('Producto')
-                    ->relationship(name: 'product', titleAttribute: 'name')
-                    ->searchable()
-                    ->optionsLimit(25)
-                    ->live()
-                    ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set){
-                        return self::searchPrice($get, $set);
-                    })
-                    ->columnSpan(3)
-                    ->required(),
-                Forms\Components\TextInput::make('quantity')
-                    ->label('Cant.')
-                    ->numeric()
-                    ->step(1)
-                    ->columnSpan(1)
-                    ->required(),
-                Forms\Components\TextInput::make('price')
-                    ->label('Precio')
-                    ->numeric()
-                    ->inputMode('decimal')
-                    ->step('0.01')
-                    ->prefix('$')
-                    ->columnSpan(1)
-                    ->required(),
-            ])
-            ->live(onBlur: true)
-            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-                return self::updateTotals($get, $set);
-            })
-            ->columns(5),
-        ]);
-    }
-
-    public static function subtotals(): Forms\Components\Fieldset
-    {
-        return Forms\Components\Fieldset::make('Totales')
-            ->schema([
-                Forms\Components\TextInput::make('subtotal')
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(',')
-                    ->numeric()
-                    ->readOnly()
-                    ->prefix('$'),
-                Forms\Components\TextInput::make('tax')
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(',')
-                    ->numeric()
-                    ->readOnly()
-                    ->prefix('$'),
-                Forms\Components\TextInput::make('total')
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(',')
-                    ->numeric()
-                    ->readOnly()
-                    ->prefix('$'),
-            ]);
-    }
-
     public static function transformEstimate(Estimate $record)
     {
         try {
@@ -264,8 +146,7 @@ class EstimateResource extends Resource
             }
 
             $record->update([
-                'status' => 1,
-                'order_id' => $order->id,
+                'status' => EstimateStatusEnum::ORDERED,
             ]);
 
             DB::commit();
@@ -280,6 +161,11 @@ class EstimateResource extends Resource
 
             return false;
         }
+
+        Notification::make()
+            ->title('Orden creada')
+            ->success()
+            ->send();
 
         return redirect()->route('filament.admin.resources.orders.edit', $order);
     }
