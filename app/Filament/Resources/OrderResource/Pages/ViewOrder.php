@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\OrderResource\Pages;
 
-use App\Models\Order;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\VehicleInventoryResource;
 
 class ViewOrder extends ViewRecord
 {
@@ -16,13 +16,18 @@ class ViewOrder extends ViewRecord
         return [
             Actions\Action::make('viewInventory')
                 ->label('Ver inventario')
-                ->url(route('filament.admin.resources.vehicle-inventories.view', $this->record->inventory->id))
+                ->url(fn (): string => VehicleInventoryResource::getUrl('view', ['record' => $this->record->inventory]))
                 ->visible(fn (): bool => $this->record->inventory()->exists()),
-            Actions\EditAction::make(),
+
+            Actions\EditAction::make()
+                ->hidden(fn () => $this->record->trashed()),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
 
             Actions\Action::make('back')
-                ->label('Atrás')
-                ->url(url()->previous()),
+                ->label('Ir atrás')
+                ->color('gray')
+                ->url(static::getResource()::getUrl()),
         ];
     }
 }

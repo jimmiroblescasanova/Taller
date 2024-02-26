@@ -12,6 +12,7 @@ enum OrderStatusEnum: string implements HasLabel, HasColor
     case REVIEWING  = 'reviewing';
     case PROCESING  = 'procesing';
     case COMPLETED  = 'completed';
+    case CANCELLED  = 'cancelled';
 
     public function getLabel(): ?string
     {
@@ -21,17 +22,19 @@ enum OrderStatusEnum: string implements HasLabel, HasColor
             self::REVIEWING => 'En revision',
             self::PROCESING => 'En proceso',
             self::COMPLETED => 'Completada',
+            self::CANCELLED => 'Cancelada',
         };
     }
 
     public function getColor(): string | array | null
     {
         return match ($this) {
-            self::INCOMPLETE    => 'danger',
+            self::INCOMPLETE    => 'warning',
             self::PENDING       => 'gray',
             self::REVIEWING     => 'primary',
             self::PROCESING     => 'info',
             self::COMPLETED     => 'success',
+            self::CANCELLED     => 'danger',
         };
     }
 }

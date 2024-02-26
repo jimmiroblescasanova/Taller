@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,7 +16,10 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $casts = [
-        'status' => OrderStatusEnum::class,
+        'subtotal'  => MoneyCast::class,
+        'tax'       => MoneyCast::class,
+        'total'     => MoneyCast::class,
+        'status'    => OrderStatusEnum::class,
     ];
 
     public function inventory(): HasOne

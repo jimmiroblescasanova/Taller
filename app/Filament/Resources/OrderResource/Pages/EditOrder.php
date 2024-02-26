@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\Pages;
 
+use App\Models\Order;
 use Filament\Actions;
 use App\Enums\OrderStatusEnum;
 use App\Traits\ShouldRedirectToIndex;
@@ -20,9 +21,11 @@ class EditOrder extends EditRecord
         return [
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
-                ->before(function () {
-                    $this->record->items()->delete();
-                }),
+            ->before(function (Order $record) {
+                $record->update([
+                    'status' => OrderStatusEnum::CANCELLED,
+                ]);
+            }),
         ];
     }
 
