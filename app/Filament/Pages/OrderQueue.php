@@ -13,6 +13,8 @@ class OrderQueue extends Page implements HasTable
 {
     use InteractsWithTable;
 
+    protected static ?string $title = 'Ordenes en Proceso';
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.order-queue';
@@ -22,12 +24,24 @@ class OrderQueue extends Page implements HasTable
         return $table
             ->query(fn (Order $order) => $order->where('ended_at', null))
             ->poll('10s')
-            ->defaultGroup('platform.name')
+            ->groups([
+                Tables\Grouping\Group::make('station.name')
+                    ->label('Plataforma')
+            ])
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')->date(),
-                Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('started_at')->since(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Fecha')
+                    ->date(),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Descripción'),
+                Tables\Columns\TextColumn::make('vehicle.license_plate')
+                    ->label('Placas'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge(),
+                Tables\Columns\TextColumn::make('started_at')
+                    ->label('Tiempo de trabajo')    
+                    ->since(),
             ]);
     }
 }
