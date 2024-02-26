@@ -14,6 +14,8 @@ class WorkOrders extends Page implements HasTable
 {
     use InteractsWithTable;
 
+    protected static ?string $title = 'Procesar Ordenes';
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.work-orders';
@@ -22,15 +24,33 @@ class WorkOrders extends Page implements HasTable
     {
         return $table
             ->query(fn (Order $order) => $order->where('ended_at', null))
-            ->defaultGroup('agent.name')
+            ->groups([
+                Tables\Grouping\Group::make('station.name')
+                    ->label('Plataforma')
+            ])
+            ->defaultGroup('station.name')
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')->date(),
-                Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('started_at')->since(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Fecha')
+                    ->date(),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('# Orden'),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Descripción'),
+                Tables\Columns\TextColumn::make('vehicle.license_plate')
+                    ->label('Placas'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge(),
+                Tables\Columns\TextColumn::make('specialist.name')
+                    ->label('Mecanico'),
+                Tables\Columns\TextColumn::make('started_at')
+                    ->label('Tiempo de inicio')
+                    ->since(),
             ])
             ->actions([
                 Tables\Actions\Action::make('start')
+                    ->label('Iniciar')
                     ->requiresConfirmation()
                     ->action(function(Order $record) {
                         $record->update([
@@ -40,6 +60,7 @@ class WorkOrders extends Page implements HasTable
                     })
                     ->visible(fn (Order $record) => $record->status === OrderStatusEnum::PENDING),
                 Tables\Actions\Action::make('complete')
+                    ->label('Terminar')
                     ->requiresConfirmation()
                     ->action( function(Order $record) {
                         $record->update([
