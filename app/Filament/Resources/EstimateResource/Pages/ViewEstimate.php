@@ -16,10 +16,17 @@ class ViewEstimate extends ViewRecord
         return [
             Actions\EditAction::make()
                 ->hidden(fn (Estimate $record) => $record->order()->exists()),
-            Actions\Action::make('back')
-                ->label('Ir atrás')
-                ->color('gray')
-                ->url(static::getResource()::getUrl()),
+
+            Actions\Action::make('print')
+                ->label('Ver PDF')
+                ->color('danger')
+                ->url(fn (Estimate $record) => route('pdf.estimate', $record))
+                ->openUrlInNewTab(),
+
+                Actions\Action::make('back')
+                    ->label('Ir atrás')
+                    ->color('gray')
+                    ->url(static::getResource()::getUrl()),
         ];
     }
 }
