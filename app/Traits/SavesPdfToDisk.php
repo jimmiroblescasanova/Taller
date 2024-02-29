@@ -1,19 +1,25 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Traits;
 
 use App\Models\Estimate;
-use Illuminate\Http\Request;
 use LaravelDaily\Invoices\Invoice;
 use LaravelDaily\Invoices\Classes\Party;
 use LaravelDaily\Invoices\Classes\InvoiceItem;
 
-class DownloadEstimate extends Controller
+trait SavesPdfToDisk 
 {
-    /**
-     * Handle the incoming request.
-     */
-    public function __invoke(Estimate $estimate)
+    public function getPdfUrl(Estimate $estimate)
+    {
+        return $this->generatePDF($estimate)->url();
+    }
+
+    public function getPdfFile(Estimate $estimate)
+    {
+        return $this->generatePDF($estimate);
+    }
+
+    protected function generatePDF(Estimate $estimate)
     {
         $seller = new Party([
             'name' => $estimate->agent->name,
@@ -43,8 +49,10 @@ class DownloadEstimate extends Controller
             ->buyer($contact)
             ->payUntilDays(15)
             ->taxRate(16)
-            ->addItems($items);
+            ->addItems($items)
+            ->save('public');
 
-        return $invoice->stream();
+        return $invoice;
     }
+
 }
