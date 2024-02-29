@@ -16,7 +16,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\EstimateResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\EstimateResourse\EstimateForm;
+use App\Filament\Resources\EstimateResource\EstimateForm;
 use App\Filament\Resources\EstimateResource\RelationManagers;
 
 class EstimateResource extends Resource

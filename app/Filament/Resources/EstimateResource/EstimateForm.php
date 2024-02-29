@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Filament\Resources\EstimateResourse;
+namespace App\Filament\Resources\EstimateResource;
 
 use Filament\Forms;
 use App\Models\Contact;
