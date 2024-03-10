@@ -2,11 +2,11 @@
 
     <x-filament::section aside>
         <x-slot name="heading">
-            User details
+            Clientes
         </x-slot>
 
         <x-slot name="description">
-            This is all the information we hold about the user.
+            Obtener todos los clientes de la empresa CONTPAQi asociada.
         </x-slot>
 
         <x-filament-panels::form wire:submit="submit" wire:loading.remove>

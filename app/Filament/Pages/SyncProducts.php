@@ -21,18 +21,33 @@ class SyncProducts extends Page implements HasForms
 
     protected static ?string $navigationGroup = 'CONTPAQi';
 
+    protected static ?string $title = 'Sincronizacion de Productos';
+
+    public ?array $data = [];
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
+                Components\Select::make('type')
+                    ->label('Tipo de producto')
+                    ->options([
+                        1 => 'Producto',
+                        3 => 'Servicios'
+                    ])
+                    ->required(),
                 Components\Checkbox::make('accept')
                     ->label('Acepto comenzar la sincronización de todos los productos y servicios. Este proceso puede demorar de acuerdo a la cantidad de registros que existan.')
                     ->required()
-            ]);
+            ])
+            ->statePath('data');
     }
 
     public function submit()
     {
+        // Opcion temporal para aumentar el limite de espera
+        ini_set('max_execution_time', 300);
+
         try {
             DB::connection('sqlcompac')->getPdo();
         } catch (\Throwable $th) {
@@ -44,25 +59,38 @@ class SyncProducts extends Page implements HasForms
             return false;
         }
 
-        // Obtener el mes actual
-        $mes = date('n');
-        // Construir el nombre de la columna dinámica
-        $cEntradas = 'EC.CENTRADASPERIODO' . $mes;
-        $cSalidas = 'EC.CSALIDASPERIODO' . $mes;
+        if ($this->data['type'] == 1) 
+        {
+            // Obtener el mes actual
+            $mes = date('n');
+            // Construir el nombre de la columna dinámica
+            $cEntradas = 'EC.CENTRADASPERIODO' . $mes;
+            $cSalidas = 'EC.CSALIDASPERIODO' . $mes;
 
-        $products = DB::connection('sqlcompac')
-            ->table('admProductos as PR')
-            ->join('admExistenciaCosto AS EC', 'PR.CIDPRODUCTO', '=', 'EC.CIDPRODUCTO')
-            ->join('admEjercicios AS EJ', 'EC.CIDEJERCICIO', '=', 'EJ.CIDEJERCICIO')
-            ->join('admUnidadesMedidaPeso AS UM', 'PR.CIDUNIDADBASE', '=', 'UM.CIDUNIDAD')
-            ->select('PR.*', 'UM.CNOMBREUNIDAD', $cEntradas . ' AS ENTRADAS', $cSalidas . ' AS SALIDAS')
-            ->where([
-                ['PR.CTIPOPRODUCTO', 1],
-                ['PR.CSTATUSPRODUCTO', 1],
-                ['EC.CIDALMACEN', 1],
-                ['EJ.CEJERCICIO', date('Y')],
-            ])
-            ->get();
+            $products = DB::connection('sqlcompac')
+                ->table('admProductos as PR')
+                ->join('admExistenciaCosto AS EC', 'PR.CIDPRODUCTO', '=', 'EC.CIDPRODUCTO')
+                ->join('admEjercicios AS EJ', 'EC.CIDEJERCICIO', '=', 'EJ.CIDEJERCICIO')
+                ->join('admUnidadesMedidaPeso AS UM', 'PR.CIDUNIDADBASE', '=', 'UM.CIDUNIDAD')
+                ->select('PR.*', 'UM.CNOMBREUNIDAD', $cEntradas . ' AS ENTRADAS', $cSalidas . ' AS SALIDAS')
+                ->where([
+                    ['PR.CTIPOPRODUCTO', 1],
+                    ['PR.CSTATUSPRODUCTO', 1],
+                    ['EC.CIDALMACEN', 1],
+                    ['EJ.CEJERCICIO', date('Y')],
+                ])
+                ->get();
+        } else {
+            $products = DB::connection('sqlcompac')
+                ->table('admProductos as PR')
+                ->join('admUnidadesMedidaPeso AS UM', 'PR.CIDUNIDADBASE', '=', 'UM.CIDUNIDAD')
+                ->select('PR.*', 'UM.CNOMBREUNIDAD')
+                ->where([
+                    ['PR.CTIPOPRODUCTO', 3],
+                    ['PR.CSTATUSPRODUCTO', 1],
+                ])
+                ->get();
+        }
 
         $clasifications = DB::connection('sqlcompac')->table('admClasificacionesValores')->pluck('CIDVALORCLASIFICACION', 'CVALORCLASIFICACION');
 
@@ -74,7 +102,7 @@ class SyncProducts extends Page implements HasForms
                 'type' => $product->CTIPOPRODUCTO,
                 'status' => $product->CSTATUSPRODUCTO,
                 'um' => $product->CNOMBREUNIDAD,
-                'inventory' => $product->ENTRADAS - $product->SALIDAS,
+                'inventory' => $this->data['type'] === 1 ? ($product->ENTRADAS - $product->SALIDAS) : 0,
                 'cl_1' => trim($clasifications->search($product->CIDVALORCLASIFICACION1)),
                 'cl_2' => trim($clasifications->search($product->CIDVALORCLASIFICACION2)),
                 'cl_3' => trim($clasifications->search($product->CIDVALORCLASIFICACION3)),
@@ -92,7 +120,7 @@ class SyncProducts extends Page implements HasForms
         }
 
         Notification::make()
-            ->title('Clientes sincronizados')
+            ->title('Productos sincronizados')
             ->success()
             ->send();
 

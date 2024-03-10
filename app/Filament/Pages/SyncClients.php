@@ -5,24 +5,23 @@ namespace App\Filament\Pages;
 use App\Models\Client;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
-use App\Models\admClientes;
 use Filament\Forms\Components;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Forms\Concerns\InteractsWithForms;
 
-class SyncContpaqi extends Page implements HasForms
+class SyncClients extends Page implements HasForms
 {
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.sync-contpaqi';
+    protected static string $view = 'filament.pages.sync-clients';
 
     protected static ?string $navigationGroup = 'CONTPAQi';
 
-    protected ?string $subheading = 'Esta sección es para sincronizar la información con la empresa contpaqi';
+    protected static ?string $title = "Sincronización de Clientes";
 
     public ?int $accept = 0;
 
@@ -30,8 +29,11 @@ class SyncContpaqi extends Page implements HasForms
     {
         return $form
             ->schema([
+                Components\Placeholder::make('agreement')
+                    ->label('Información')
+                    ->content('La sincronizacion de los clientes, puede demorar de acuerdo a la cantidad de registros que se encuentren en la base de datos.'),
                 Components\Checkbox::make('accept')
-                    ->label('Acepto comenzar la sincronización de los clientes. Este proceso puede demorar de acuerdo a la cantidad de clientes.')
+                    ->label('Acepto')
                     ->required()
             ]);
     }
