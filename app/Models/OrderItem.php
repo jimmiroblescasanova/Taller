@@ -4,14 +4,12 @@ namespace App\Models;
 
 use App\Casts\MoneyCast;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OrderItem extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
     protected $casts = [
         'price' => MoneyCast::class,

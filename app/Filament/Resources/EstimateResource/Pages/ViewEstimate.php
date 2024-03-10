@@ -38,7 +38,7 @@ class ViewEstimate extends ViewRecord
             
                         $this->halt();
                     }
-            
+                    // TODO: change the admin email to client
                     Mail::to('admin@admin.com')->send(new EstimateCreated($record));
             
                     return Notification::make()

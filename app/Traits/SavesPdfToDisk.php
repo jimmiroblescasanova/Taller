@@ -2,49 +2,50 @@
 
 namespace App\Traits;
 
-use App\Models\Estimate;
 use LaravelDaily\Invoices\Invoice;
+use Illuminate\Database\Eloquent\Model;
 use LaravelDaily\Invoices\Classes\Party;
 use LaravelDaily\Invoices\Classes\InvoiceItem;
 
 trait SavesPdfToDisk 
 {
-    public function getPdfUrl(Estimate $estimate)
+    public function getPdfUrl(Model $model, string $name = null, string $series = null): Invoice
     {
-        return $this->generatePDF($estimate)->url();
+        return $this->generatePDF($model, $name, $series)->url();
     }
 
-    public function getPdfFile(Estimate $estimate)
+    public function getPdfFile(Model $model, string $name = null, string $series = null): Invoice
     {
-        return $this->generatePDF($estimate);
+        return $this->generatePDF($model, $name, $series);
     }
 
-    protected function generatePDF(Estimate $estimate)
+    protected function generatePDF($model, $name, $series)
     {
         $seller = new Party([
-            'name' => $estimate->agent->name,
+            'name' => $model->agent->name,
         ]);
 
         $contact = new Party([
-            'name'          => $estimate->contact->full_name,
-            'phone'         => $estimate->contact->phone,
+            'name'          => $model->contact->full_name,
+            'phone'         => $model->contact->phone,
             'custom_fields' => [
-                'email' => $estimate->contact->email,
+                'email' => $model->contact->email,
             ],
         ]);
 
         $items = [];
-        foreach ($estimate->items as $i => $item) {
+        foreach ($model->items as $i => $item) {
             $items[$i] = InvoiceItem::make($item->product->name)
                 ->quantity($item->quantity)
                 ->pricePerUnit($item->price);
         }
 
+        // TODO: cambiar la plantilla o ver como hacerla dinamica ¿?
         $invoice = Invoice::make()
             ->template('estimate')
-            ->name('cotización')
-            ->series('COT')
-            ->sequence($estimate->id)
+            ->name($name ?? config('app.name'))
+            ->series($series ?? '')
+            ->sequence($model->id)
             ->seller($seller)
             ->buyer($contact)
             ->payUntilDays(15)

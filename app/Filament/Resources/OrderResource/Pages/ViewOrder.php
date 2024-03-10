@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\Pages;
 
+use App\Models\Order;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\OrderResource;
@@ -18,6 +19,11 @@ class ViewOrder extends ViewRecord
                 ->label('Ver inventario')
                 ->url(fn (): string => VehicleInventoryResource::getUrl('view', ['record' => $this->record->inventory]))
                 ->visible(fn (): bool => $this->record->inventory()->exists()),
+
+            Actions\Action::make('pdf')
+                ->label('Ver PDF')
+                ->url(fn (Order $record) => route('pdf.order.stream', $record))
+                ->openUrlInNewTab(),
 
             Actions\EditAction::make()
                 ->hidden(fn () => $this->record->trashed()),

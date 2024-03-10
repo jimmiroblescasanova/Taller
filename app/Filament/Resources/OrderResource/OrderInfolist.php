@@ -66,10 +66,10 @@ class OrderInfolist extends Infolist
         ->icon('heroicon-o-shopping-bag')
         ->schema([
             Infolists\Components\RepeatableEntry::make('items')
-            ->label('Detalle de los productos')
+            ->label('Detalle de los productos y servicios')
             ->schema([
                 Infolists\Components\TextEntry::make('product.name')
-                    ->label('Producto')
+                    ->label('Descripción')
                     ->columnSpan(4),
                 Infolists\Components\TextEntry::make('quantity')
                     ->label('Cantidad')
