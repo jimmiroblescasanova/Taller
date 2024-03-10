@@ -15,18 +15,21 @@ class ListProducts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
     }
 
     public function getTabs(): array
     {
         return [
-            'todos' => Tab::make(),
+            'all' => Tab::make()
+                ->label('Todos'),
             'products' => Tab::make()
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 1)),
+                ->label('Productos')
+                ->modifyQueryUsing(fn (Builder $query) => $query->typeProduct()),
             'services' => Tab::make()
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 3)),
+                ->label('Servicios')
+                ->modifyQueryUsing(fn (Builder $query) => $query->typeService()),
         ];
     }
 }
