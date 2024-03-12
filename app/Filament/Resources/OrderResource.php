@@ -87,7 +87,7 @@ class OrderResource extends Resource
                                 'vehicle_id' => $record->vehicle_id,
                             ]);
 
-                            return redirect()->url(VehicleInventoryResource::getUrl('edit', ['record' => $inventory]));
+                            return redirect(VehicleInventoryResource::getUrl('edit', ['record' => $inventory]));
                         })
                         ->requiresConfirmation()
                         ->hidden(fn(Order $record): bool => $record->inventory()->exists() || $record->status == OrderStatusEnum::INCOMPLETE),
