@@ -40,6 +40,9 @@ class SyncClients extends Page implements HasForms
 
     public function submit()
     {
+        // Opcion temporal para aumentar el limite de espera
+        ini_set('max_execution_time', 300);
+
         try {
             DB::connection('sqlcompac')->getPdo();
         } catch (\Throwable $th) {
