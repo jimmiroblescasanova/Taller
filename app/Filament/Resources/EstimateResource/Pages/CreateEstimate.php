@@ -11,4 +11,6 @@ class CreateEstimate extends CreateRecord
     use ShouldRedirectToIndex;
     
     protected static string $resource = EstimateResource::class;
+
+    //TODO: send email
 }
