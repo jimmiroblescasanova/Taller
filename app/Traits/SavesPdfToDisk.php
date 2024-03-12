@@ -9,7 +9,7 @@ use LaravelDaily\Invoices\Classes\InvoiceItem;
 
 trait SavesPdfToDisk 
 {
-    public function getPdfUrl(Model $model, string $name = null, string $series = null): Invoice
+    public function getPdfUrl(Model $model, string $name = null, string $series = null): string
     {
         return $this->generatePDF($model, $name, $series)->url();
     }
