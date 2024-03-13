@@ -22,7 +22,7 @@ class ContactResource extends Resource
 
     protected static ?string $modelLabel = 'contacto';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
     protected static ?string $navigationGroup = 'Catalogos';
 

@@ -20,7 +20,7 @@ class SpecialistResource extends Resource
 
     protected static ?string $modelLabel = 'especialista';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-face-smile';
 
     protected static ?string $navigationGroup = 'Empresa';
 

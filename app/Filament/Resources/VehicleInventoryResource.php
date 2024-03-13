@@ -21,7 +21,7 @@ class VehicleInventoryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Inventarios de Vehiculo';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-photo';
 
     public static function form(Form $form): Form
     {

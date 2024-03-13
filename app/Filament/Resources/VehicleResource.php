@@ -21,7 +21,7 @@ class VehicleResource extends Resource
 
     protected static ?string $modelLabel = 'vehículo';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-truck';
 
     protected static ?string $navigationGroup = 'Catalogos';
 

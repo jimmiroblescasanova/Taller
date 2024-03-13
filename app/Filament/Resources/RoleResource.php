@@ -21,7 +21,7 @@ class RoleResource extends Resource
     protected static ?string $modelLabel = 'perfil';
     protected static ?string $pluralModelLabel = 'perfiles';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-finger-print';
 
     protected static ?string $navigationGroup = 'Seguridad';
 

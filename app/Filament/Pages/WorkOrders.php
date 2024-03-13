@@ -16,7 +16,7 @@ class WorkOrders extends Page implements HasTable
 
     protected static ?string $title = 'Procesar Ordenes';
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
     protected static string $view = 'filament.pages.work-orders';
 

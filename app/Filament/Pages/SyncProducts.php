@@ -15,7 +15,7 @@ class SyncProducts extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-cloud-arrow-down';
 
     protected static string $view = 'filament.pages.sync-products';
 
@@ -29,6 +29,9 @@ class SyncProducts extends Page implements HasForms
     {
         return $form
             ->schema([
+                Components\Placeholder::make('agreement')
+                    ->label('Información')
+                    ->content('Acepto comenzar la sincronización de todos los productos y servicios. Este proceso puede demorar de acuerdo a la cantidad de registros que existan.'),
                 Components\Select::make('type')
                     ->label('Tipo de producto')
                     ->options([
@@ -37,7 +40,7 @@ class SyncProducts extends Page implements HasForms
                     ])
                     ->required(),
                 Components\Checkbox::make('accept')
-                    ->label('Acepto comenzar la sincronización de todos los productos y servicios. Este proceso puede demorar de acuerdo a la cantidad de registros que existan.')
+                    ->label('Acepto')
                     ->required()
             ])
             ->statePath('data');

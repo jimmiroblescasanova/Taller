@@ -21,7 +21,7 @@ class StationResource extends Resource
 
     protected static ?string $pluralModelLabel = 'estaciones';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-globe-americas';
 
     protected static ?string $navigationGroup = 'Empresa';
 

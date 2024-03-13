@@ -15,7 +15,7 @@ class OrderQueue extends Page implements HasTable
 
     protected static ?string $title = 'Ordenes en Proceso';
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench';
 
     protected static string $view = 'filament.pages.order-queue';
 
