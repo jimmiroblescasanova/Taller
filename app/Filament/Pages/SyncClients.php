@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\User;
 use App\Models\Client;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
@@ -83,4 +84,10 @@ class SyncClients extends Page implements HasForms
         return redirect()->route('filament.admin.pages.dashboard');
     }
 
+    public static function canAccess(): bool
+    {
+        $user = User::find(auth()->user()->id);
+        
+        return $user->isSuperAdmin() || $user->checkPermissionTo('sincronizar contpaqi');
+    }
 }

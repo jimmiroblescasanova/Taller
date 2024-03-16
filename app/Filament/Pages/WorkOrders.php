@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\User;
 use Filament\Tables;
 use App\Models\Order;
 use Filament\Pages\Page;
@@ -70,5 +71,12 @@ class WorkOrders extends Page implements HasTable
                     })
                     ->visible(fn (Order $record) => $record->status === OrderStatusEnum::PROCESING),
             ]);
+    }
+
+    public static function canAccess(): bool
+    {
+        $user = User::find(auth()->user()->id);
+        
+        return $user->isSuperAdmin() || $user->checkPermissionTo('procesar ordenes');
     }
 }

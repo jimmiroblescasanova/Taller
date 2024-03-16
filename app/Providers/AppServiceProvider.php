@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\Eloquent\Model;
@@ -25,8 +26,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::unguard();
         
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('Super Admin') ? true : null;
+        Gate::before(function (User $user, string $ability) {
+            return $user->isSuperAdmin() ? true: null;
         });
     }
 }

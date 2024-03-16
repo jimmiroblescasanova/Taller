@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\Estimate;
 use Illuminate\Auth\Access\Response;
+use App\Models\Estimate;
+use App\Models\User;
 
 class EstimatePolicy
 {
@@ -13,7 +13,7 @@ class EstimatePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view-any estimates');
+        return $user->checkPermissionTo('listar cotizaciones');
     }
 
     /**
@@ -21,7 +21,7 @@ class EstimatePolicy
      */
     public function view(User $user, Estimate $estimate): bool
     {
-        return $user->can('view estimates');
+        return $user->checkPermissionTo('ver cotizaciones');
     }
 
     /**
@@ -29,7 +29,7 @@ class EstimatePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create estimates');
+        return $user->checkPermissionTo('crear cotizaciones');
     }
 
     /**
@@ -37,7 +37,7 @@ class EstimatePolicy
      */
     public function update(User $user, Estimate $estimate): bool
     {
-        return $user->can('update estimates');
+        return $user->checkPermissionTo('actualizar cotizaciones');
     }
 
     /**
@@ -45,7 +45,7 @@ class EstimatePolicy
      */
     public function delete(User $user, Estimate $estimate): bool
     {
-        return $user->can('delete estimates');
+        return $user->checkPermissionTo('eliminar cotizaciones');
     }
 
     /**
@@ -53,7 +53,7 @@ class EstimatePolicy
      */
     public function restore(User $user, Estimate $estimate): bool
     {
-        //
+        return $user->checkPermissionTo('recuperar cotizaciones');
     }
 
     /**
@@ -61,6 +61,6 @@ class EstimatePolicy
      */
     public function forceDelete(User $user, Estimate $estimate): bool
     {
-        //
+        return $user->checkPermissionTo('forzar-eliminacion cotizaciones');
     }
 }

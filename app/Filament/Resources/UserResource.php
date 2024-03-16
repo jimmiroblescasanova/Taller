@@ -19,7 +19,7 @@ class UserResource extends Resource
 
     protected static ?string $modelLabel = 'usuario';
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-finger-print';
 
     protected static ?string $navigationGroup = 'Seguridad';
 
@@ -30,22 +30,25 @@ class UserResource extends Resource
                 Forms\Components\Section::make()
                 ->schema([
                     Forms\Components\TextInput::make('name')
-                        ->label('Nombre completo'),
+                        ->label('Nombre completo')
+                        ->required(),
                     Forms\Components\TextInput::make('email')
-                        ->label('Correo electrónico'),
+                        ->label('Correo electrónico')
+                        ->email()
+                        ->required(),
                     Forms\Components\TextInput::make('password')
                         ->label('Contraseña')
                         ->password()
-                        ->revealable()
-                        ->dehydrated(false),
+                        ->required(fn (string $operation): bool => $operation === 'create')
+                        ->dehydrated(fn (?string $state): bool => filled($state))
+                        ->revealable(),
                     Forms\Components\Select::make('roles')
-                        ->label('Perfil')
                         ->multiple()
                         ->relationship(
-                            titleAttribute: 'name', 
+                            name: 'roles', 
+                            titleAttribute: 'name',
                             modifyQueryUsing: fn (Builder $query) => $query->where('name', '!=', 'Super Admin') 
                         )
-                        ->searchable()
                         ->preload()
                         ->maxItems(1),
                 ])

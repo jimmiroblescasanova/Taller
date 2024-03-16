@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\User;
 use App\Models\Product;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
@@ -128,5 +129,12 @@ class SyncProducts extends Page implements HasForms
             ->send();
 
         return redirect()->route('filament.admin.pages.dashboard');
+    }
+
+    public static function canAccess(): bool
+    {
+        $user = User::find(auth()->user()->id);
+        
+        return $user->isSuperAdmin() || $user->checkPermissionTo('sincronizar contpaqi');
     }
 }
