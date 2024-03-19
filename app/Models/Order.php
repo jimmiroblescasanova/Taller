@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\MoneyCast;
+use App\Traits\GetStats;
 use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model 
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, GetStats;
 
     protected $casts = [
         'subtotal'  => MoneyCast::class,
