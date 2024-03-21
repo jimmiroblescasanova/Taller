@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\Estimate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Number;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::unguard();
+
+        Number::useLocale('es_MX');
         
         Gate::before(function (User $user, string $ability) {
             return $user->isSuperAdmin() ? true: null;
